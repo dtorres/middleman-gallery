@@ -94,7 +94,61 @@ module Middleman
           end
         end
         @photo_entries.sort_by!(&:publish_date).reverse!
+        resources += build_pages()
         resources
+      end
+      
+      def build_pages
+        return [] unless @options.pagination
+        
+        template_json_page = Middleman::Sitemap::Resource.new(@app.sitemap, "page/page.json", (@app.source_dir + "layouts" + @options.json_layout).to_path)
+        template_json_page.ignored = true
+        
+        template_page = Middleman::Sitemap::Resource.new(@app.sitemap, "page/page.html", (@app.source_dir + "index.html.erb").to_path)
+        template_page.ignored = true
+        
+        page_count = @options.page_count
+        start_idx = @photo_entries.count
+        page_idx = 0
+        proxy_pages = [template_json_page, template_page]
+        store = @app.sitemap
+        next_page = nil
+        while start_idx > page_count
+          end_idx = start_idx
+          start_idx = end_idx - page_count
+          previous_page = nil
+          if start_idx > page_count
+            previous_page = "/page/#{page_idx+1}.html"
+          else
+            previous_page = "/index.html"
+          end
+          
+          metadata = { 
+            :entry_indexes => start_idx...end_idx,
+            :previous_page => previous_page,
+            :next_page => next_page 
+          }
+          
+          json_resource = Middleman::Sitemap::ProxyResource.new(store, "page/#{page_idx}.json", "page/page.json")
+          json_resource.add_metadata(metadata)
+          proxy_pages << json_resource
+          
+          html_resource = Middleman::Sitemap::ProxyResource.new(store, "page/#{page_idx}.html", "page/page.html")
+          html_resource.add_metadata(metadata)
+          proxy_pages << html_resource
+          
+          next_page = "/page/#{page_idx}.html"
+          page_idx += 1
+        end
+        
+        entry_idxs = 0...(start_idx + page_count)
+        
+        index_resource = @app.sitemap.find_resource_by_path("index.html")
+        index_resource.add_metadata({ 
+          :entry_indexes => entry_idxs,
+          :next_idx => page_idx-2,
+          :next_page => "/page/#{page_idx-2}.html"})
+        proxy_pages
       end
       
     end

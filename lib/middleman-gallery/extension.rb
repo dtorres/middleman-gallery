@@ -17,6 +17,11 @@ module Middleman
     option :pending_dir, '_pending_pictures', 'Path where pending pictures reside'
     option :thumb_sizes, [], 'Thumbnail sizes to be generated, will be mapped to [small, medium]'
     option :cdn_url, "/", 'Where the photos/thumbnails reside, defaults to root of hosting'
+    option :pagination, false, "Should we paginate"
+    option :page_count, 20, "Number of items per page"
+    option :page_layout, "index.html.erb", "Layout for pages, defaults to same as index"
+    option :json_layout, "page.json.erb", "Layout for JSON pages"
+    option :page_json, true, "Generate json for the pages"
     
     attr_reader :data
     

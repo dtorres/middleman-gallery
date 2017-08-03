@@ -94,8 +94,28 @@ module Middleman
           end
         end
         @photo_entries.sort_by!(&:publish_date).reverse!
+        desambiguate_entries(@photo_entries)
         resources += build_pages()
         resources
+      end
+      
+      def desambiguate_entries(entries)
+        path_map = Hash.new
+        entries.each do |res|
+          key = res.destination_path
+          arr = path_map[key]
+          if !arr
+            arr = Array.new
+            path_map[key] = arr
+          end
+          arr << res
+        end
+        path_map.each do |key, value|
+          next if value.count < 2
+          value.reverse[1..-1].each_with_index do |res, i|
+            res.destination_path = key + "-" + (i + 1).to_s
+          end
+        end
       end
       
       def build_pages

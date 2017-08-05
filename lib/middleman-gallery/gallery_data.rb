@@ -1,5 +1,12 @@
 module Middleman
   module Gallery
+    
+    class C_Resource < Middleman::Sitemap::Resource
+      def binary?
+        true
+      end
+    end
+    
     class GalleryData
       
       attr_reader :photo_entries
@@ -96,8 +103,42 @@ module Middleman
         end
         @photo_entries.sort_by!(&:publish_date).reverse!
         desambiguate_entries(@photo_entries)
+        resources = _hack_cache(resources)
         resources += build_pages()
         resources
+      end
+      
+      def _hack_cache(resources)
+        data_path = @app.source_dir + "../data/"
+        build_dir = @app.source_dir + "../build/"
+        hash_path = @app.source_dir + "../.source_hashes.json"
+        #FIX ME: Take into account layout file
+        hash_map = JSON.load(File.open(hash_path)) || {}
+        end_res = resources.map do |res|
+          unless res.is_a? Middleman::Gallery::PhotoEntry
+            res
+          else
+           hash_ctx = Digest::SHA1.new
+           hash_ctx << File.read(@app.source_dir + (res.path + ".erb"))
+           hash_ctx << File.read(res.metadata_path(data_path))
+           prev_photo = previous_photo(res)
+           hash_ctx << prev_photo.path if prev_photo
+           nxt_photo = next_photo(res)
+           hash_ctx << nxt_photo.path if nxt_photo
+           hash = hash_ctx.hexdigest
+           build_path = build_dir + res.destination_path + "index.html"
+           if File.exist?(build_path) && hash_map[res.destination_path] == hash
+              res = C_Resource.new(@app.sitemap, res.destination_path + ".html", build_path.to_path)
+           else
+             hash_map[res.destination_path] = hash
+             res
+           end
+          end
+        end
+        File.open(hash_path, "w") do |f|
+          f.write hash_map.to_json
+        end
+        end_res
       end
       
       def desambiguate_entries(entries)

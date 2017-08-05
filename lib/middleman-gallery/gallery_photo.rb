@@ -4,7 +4,7 @@ module Middleman
       
       attr_accessor :gallery
       def render(opts={}, locs={}, &block)
-        opts[:layout] = "photoentry"
+        opts[:layout] = metadata[:options][:layout]
         super(opts, locs, &block)
       end
       

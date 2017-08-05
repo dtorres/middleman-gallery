@@ -87,6 +87,7 @@ module Middleman
             metadata["date_taken"] = Date.parse(date) unless date == nil
       
             resource.add_metadata metadata
+            resource.add_metadata({:options => {:layout => @options.layout}})
             original_file = @app.source_dir + @options.pending_dir + resource.data.file 
             if (File.exist? original_file) && (@app.environment == :development)
               resources << Middleman::Sitemap::Resource.new(@app.sitemap, @options.pending_dir + "/" + resource.data.file, original_file.to_path)

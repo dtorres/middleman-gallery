@@ -113,7 +113,7 @@ module Middleman
         build_dir = @app.source_dir + "../build/"
         hash_path = @app.source_dir + "../.source_hashes.json"
         #FIX ME: Take into account layout file
-        hash_map = JSON.load(File.open(hash_path)) || {}
+        hash_map = File.exist?(hash_path) ? JSON.load(File.open(hash_path)) : {}
         end_res = resources.map do |res|
           unless res.is_a? Middleman::Gallery::PhotoEntry
             res

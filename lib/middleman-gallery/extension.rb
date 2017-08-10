@@ -39,7 +39,7 @@ module Middleman
       thumb_sizes = options.thumb_sizes
       resized_res = Set.new
       
-      Dir.mkdir thumbs_dir unless File.exist? thumbs_dir
+      FileUtils.mkdir_p thumbs_dir
       
       @app.sitemap.resources.each do |resource|
         next unless resource.is_a? Middleman::Gallery::PhotoEntry

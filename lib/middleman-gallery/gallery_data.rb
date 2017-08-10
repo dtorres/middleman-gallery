@@ -61,7 +61,6 @@ module Middleman
         idx = binary_search(@photo_entries, photo)
         return nil if idx <= 0
         return @photo_entries[idx-1]
-
       end
       
       def to_permalink(string)
@@ -168,14 +167,19 @@ module Middleman
           next_page = "/page/#{page_idx}.html"
           page_idx += 1
         end
-        
-        entry_idxs = 0...(start_idx + page_count)
+        if start_idx < 15
+          start_idx += page_count
+          page_idx -= 1
+        end
+        entry_idxs = 0...start_idx
         
         index_resource = @app.sitemap.find_resource_by_path("index.html")
-        index_resource.add_metadata({ 
-          :entry_indexes => entry_idxs,
-          :next_idx => page_idx-2,
-          :next_page => "/page/#{page_idx-2}.html"})
+        unless index_resource.nil?
+            index_resource.add_metadata({
+                                        :entry_indexes => entry_idxs,
+                                        :next_idx => page_idx-1,
+                                        :next_page => "/page/#{page_idx-1}.html"})
+        end
         proxy_pages
       end
       

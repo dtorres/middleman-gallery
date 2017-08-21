@@ -86,17 +86,13 @@ module Middleman
             resource.extend Middleman::Gallery::PhotoEntry
             resource.destination_path = to_permalink(resource.data.title)
             resource.gallery = self
-            @photo_entries << resource
+            resource._setup_metadata
             
-            metadata = JSON.load resource.metadata_path(data_path)
-            date = metadata["date_taken"]
-            metadata["date_taken"] = Date.parse(date) unless date == nil
-      
-            resource.add_metadata metadata
+            @photo_entries << resource
             resource.add_metadata({:options => {:layout => @options.layout}})
-            original_file = @app.source_dir + @options.pending_dir + resource.data.file 
+            original_file = @app.source_dir + resource.original_path 
             if (File.exist? original_file) && (@app.environment == :development)
-              resources << Middleman::Sitemap::Resource.new(@app.sitemap, @options.pending_dir + "/" + resource.data.file, original_file.to_path)
+              resources << Middleman::Sitemap::Resource.new(@app.sitemap, resource.original_path, original_file.to_path)
             end
           end
         end

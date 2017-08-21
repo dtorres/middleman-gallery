@@ -3,6 +3,7 @@ module Middleman
     module PhotoEntry
       
       attr_accessor :gallery
+      attr_accessor :photo_meta
       def render(opts={}, locs={}, &block)
         opts[:layout] = metadata[:options][:layout]
         super(opts, locs, &block)
@@ -14,6 +15,10 @@ module Middleman
       
       def publish_date
         data.publish_date
+      end
+
+      def date_taken
+        @photo_meta["date_taken"]
       end
       
       def title
@@ -33,6 +38,18 @@ module Middleman
           return server + File.basename(data.file, ".*") + File.extname(data.file)
         end
       end
+
+      def img_size
+        sizes = @photo_meta["sizes"]
+        sizes["large"] if sizes
+      end
+
+      def coordinate
+        if (lat = data.latitude) && (lng = data.longitude)
+          return [lat, lng]
+        end
+        nil
+      end
       
       def thumb_src(size)
         local_path = original_path
@@ -51,7 +68,18 @@ module Middleman
         #Backwards compatibility
         meta_path = data_path + (File.basename(self.path, ".*") + "_metadata.json")
         return meta_path
-      end 
+      end
+
+      def _setup_metadata
+        meta_path = metadata_path
+        if File.exist? meta_path
+         @photo_meta = JSON.load(meta_path)
+         a_date = @photo_meta["date_taken"]
+         @photo_meta["date_taken"] = Date.parse(a_date) unless a_date == nil
+        else
+          @photo_meta = {}
+        end
+      end
       
       def thumb_filename(size)
         #TODO: Enforce sizes in gallery

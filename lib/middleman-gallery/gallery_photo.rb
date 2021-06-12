@@ -50,6 +50,13 @@ module Middleman
         end
         nil
       end
+
+      def map_zoom_level
+        if (level = data.zoom_level)
+          return level
+        end
+        16
+      end
       
       def thumb_src(size)
         local_path = original_path

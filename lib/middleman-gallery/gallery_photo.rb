@@ -45,6 +45,9 @@ module Middleman
       end
 
       def coordinate
+        if (coords = data.coordinates) && (split_coords = coords.split(",")) && (split_coords.length == 2)
+          return split_coords.map(&:strip)
+        end
         if (lat = data.latitude) && (lng = data.longitude)
           return [lat, lng]
         end
